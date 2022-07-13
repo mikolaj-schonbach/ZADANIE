@@ -29,8 +29,7 @@ public class Main {
         }
         try {
             if (args[0].equals(args[1])) {
-                System.out.println("Ścieżka do pliku z listą parametrów nie może być taka sama jak ścieżka do pliku szablonu!");
-                System.out.println("Popraw parametry i uruchom program ponownie");
+                System.out.println("Ścieżka do pliku z listą parametrów nie może być taka sama jak ścieżka do pliku szablonu! \nPopraw parametry i uruchom program ponownie\n");
                 exitProgram();
             }
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -39,8 +38,7 @@ public class Main {
         }
         try {
             if (args[1].equals(args[2])) {
-                System.out.println("Ścieżka do pliku szablonu nie może być taka sama jak ścieżka do pliku zapisu!");
-                System.out.println("Popraw parametry i uruchom program ponownie");
+                System.out.println("Ścieżka do pliku szablonu nie może być taka sama jak ścieżka do pliku zapisu! \nPopraw parametry i uruchom program ponownie\n");
                 exitProgram();
             }
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -49,56 +47,24 @@ public class Main {
         }
     }
 
-    private static Map<String, String> createMap(String[] args) {
+    public static Map<String, String> createMap(String[] args) {
         Map<String, String> map = new HashMap<>();
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(args[0]))) {
-            StringBuffer textBuffer = new StringBuffer();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                textBuffer.append(line);
-                textBuffer.append("\n");
-            }
-            String text = textBuffer.toString();
-            if (text.length() == 0) {
-                System.out.println("Plik z listą parametrów nie może być pusty");
-                System.out.println("Nie udało się utworzyć pliku wyjściowego");
-                exitProgram();
-            }
-
-            String[] strings = text.split("=|\n");
-
-            for (int i = 0; i < strings.length; i = i + 2) {
-                map.put(strings[i], strings[i + 1]);
-            }
-
-        } catch (IOException e) {
-            System.out.println("Brak pliku z listą parametrów");
-            System.out.println("Nie udało się utworzyć pliku wyjściowego");
+        String text = readFile(args, 0);
+        if (text.length() == 0) {
+            System.out.println("Plik z listą parametrów nie może być pusty!\nNie udało się utworzyć pliku wyjściowego\n");
             exitProgram();
         }
-
+        String[] strings = text.split("=|\n");
+        for (int i = 0; i < strings.length; i = i + 2) {
+            map.put(strings[i], strings[i + 1]);
+        }
         return map;
     }
 
-    private static String loadTemplate(String[] args) {
-        String text = "";
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(args[1]))) {
-            StringBuffer textBuffer = new StringBuffer();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                textBuffer.append(line);
-                textBuffer.append("\n");
-            }
-            text = textBuffer.toString();
-            if (text.length() == 0) {
-                System.out.println("Plik szablonu nie może być pusty");
-                System.out.println("Nie udało się utworzyć pliku wyjściowego");
-                exitProgram();
-            }
-
-        } catch (IOException e) {
-            System.out.println("Brak pliku z szablonem");
-            System.out.println("Nie udało się utworzyć pliku wyjściowego");
+    public static String loadTemplate(String[] args) {
+        String text = readFile(args, 1);
+        if (text.length() == 0) {
+            System.out.println("Plik szablonu nie może być pusty!\nNie udało się utworzyć pliku wyjściowego\n");
             exitProgram();
         }
         return text;
@@ -121,7 +87,7 @@ public class Main {
             if (file.exists()) {
                 Scanner scanner = new Scanner(System.in);
                 String answer;
-                do{
+                do {
                     System.out.println(args[2] + " istnieje. Czy nadpisać? [T/N]");
                     answer = scanner.nextLine();
                     if (answer.equalsIgnoreCase("T")) {
@@ -134,30 +100,44 @@ public class Main {
                     } else {
                         System.out.println("Brak takiej opcji");
                     }
-                } while(!answer.equalsIgnoreCase("T"));
+                } while (!answer.equalsIgnoreCase("T"));
 
 
             } else {
-                PrintWriter writer = new PrintWriter(args[2]);
+                PrintWriter writer = new PrintWriter(args[2], "UTF-8");
                 writer.println(text);
                 writer.close();
             }
 
         } catch (FileNotFoundException e) {
-            System.out.println("Nie utworzono pliku");
+            System.out.println("Ścieżka do zapisu musi istnieć i użytkownik systemu operacyjnego musi mieć prawo do odczytu \nNie udało się utworzyć pliku wyjściowego\n");
             exitProgram();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            System.out.println("Ścieżka do zapisu musi istnieć i użytkownik systemu operacyjnego musi mieć prawo do odczytu");
-            System.out.println("Nie udało się utworzyć pliku wyjściowego");
-            System.out.print("Program zostanie zakończony");
-            System.exit(11);
+        } catch (UnsupportedEncodingException e) {
+            System.out.println("Nieprawidłowy format kodowania \nNie udało się utworzyć pliku wyjściowego\n");
+            exitProgram();
         }
     }
 
     private static void exitProgram() {
-        System.out.println("Program zakończył działanie");
+        System.out.print("Program zakończył działanie");
         System.exit(1);
     }
 
+    private static String readFile(String[] args, int parameter) {
+        String text = "";
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(args[parameter]))) {
+            StringBuffer textBuffer = new StringBuffer();
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                textBuffer.append(line);
+                textBuffer.append("\n");
+            }
+            text = textBuffer.toString();
+        } catch (IOException e) {
+            System.out.printf("Brak pliku %s \nNie udało się utworzyć pliku wyjściowego \n", args[parameter]);
+            exitProgram();
+        }
+        return text;
+    }
 
 }
